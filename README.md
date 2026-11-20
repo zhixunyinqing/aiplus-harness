@@ -61,7 +61,8 @@ python tools/log_swanlab.py --dataset B --records <state_out/records.json> --mod
 
 ## 提交信息
 
-- 模型类型：平台白名单基础模型（二次确认）
+- 模型类型：平台白名单基础模型 Qwen/Qwen3.8-27B（二次确认）
+- 实验记录：https://swanlab.cn/@1839229675/aiplus-harness
 - 镜像：`docker save` 归档，在平台 "Harness 镜像" 页上传并选为就绪
 - 源码：本仓库
 - 文档：`docs/作品文档.md`
