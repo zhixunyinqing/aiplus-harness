@@ -38,12 +38,12 @@ def run_round(key, pkg, work, parent_dir, round_index, state_dir, model):
     print("round %d exit: %s failure: %s" % (round_index, code, host.failure))
     if code != 0 or host.failure:
         print(stderr[-2000:])
-        return False
+        return None
     records = json.loads((work / "state_out" / "records.json").read_text(encoding="utf-8"))
     print("  after:", records[-1]["after"], "selected:", records[-1]["selected"],
           "attempts:", len(records[-1]["attempts"]),
           "drift:", json.dumps(records[-1]["drift"], ensure_ascii=False)[:120])
-    return True
+    return records[-1]["selected"] == "candidate"
 
 
 def main():
@@ -56,9 +56,11 @@ def main():
     parent_dir, state_dir = pkg, None
     for index in range(1, rounds + 1):
         work = root / ("work-%d" % index)
-        if not run_round(key, pkg, work, parent_dir, index, state_dir, model):
+        selected = run_round(key, pkg, work, parent_dir, index, state_dir, model)
+        if selected is None:
             return 1
-        parent_dir = work / ("round-%02d" % index)
+        if selected:
+            parent_dir = work / ("round-%02d" % index)
         state_dir = work / "state_out"
     sample = json.loads((pkg / "public" / "validation.jsonl").read_text(encoding="utf-8").splitlines()[0])
     env = os.environ.copy()

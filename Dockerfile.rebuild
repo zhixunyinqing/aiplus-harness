@@ -1,0 +1,9 @@
+FROM aiplus-harness:0.1
+
+USER root
+
+RUN chmod -R u+w /app
+
+COPY app /app
+
+RUN chmod -R a-w /app
