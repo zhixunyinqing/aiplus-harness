@@ -7,3 +7,5 @@ workspace/
 _local/
 sdk/build/
 experiments/*.npz
+
+*.egg-info/

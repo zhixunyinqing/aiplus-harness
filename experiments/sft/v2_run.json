@@ -1,0 +1,51 @@
+{
+  "tag": "v2",
+  "base_model": "Qwen/Qwen3.8-27B",
+  "rank": 32,
+  "steps": 10,
+  "learning_rate": 5e-05,
+  "examples": 13,
+  "weights_path": "trio://run_ibgiij7ethtz/sampler_weights/aiplus-v2",
+  "losses": [
+    {
+      "step": 1,
+      "loss": 1.50288058439981
+    },
+    {
+      "step": 2,
+      "loss": 1.444771066469161
+    },
+    {
+      "step": 3,
+      "loss": 1.3369950911641868
+    },
+    {
+      "step": 4,
+      "loss": 1.2286720552699568
+    },
+    {
+      "step": 5,
+      "loss": 1.1213789903513736
+    },
+    {
+      "step": 6,
+      "loss": 1.0107652195217804
+    },
+    {
+      "step": 7,
+      "loss": 0.898679388607505
+    },
+    {
+      "step": 8,
+      "loss": 0.793247724434294
+    },
+    {
+      "step": 9,
+      "loss": 0.6845960410806898
+    },
+    {
+      "step": 10,
+      "loss": 0.5679093015146446
+    }
+  ]
+}

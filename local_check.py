@@ -13,7 +13,15 @@ sys.path.insert(0, str(ROOT / "sdk"))
 from tests.support import Host
 
 
-def run_round(key, pkg, work, parent_dir, round_index, state_dir):
+def pick_model():
+    if os.environ.get("LOCAL_MODEL") != "pytrio":
+        return stub_model
+    sys.path.insert(0, str(ROOT / "tools"))
+    from pytrio_model import build_model
+    return build_model(os.environ.get("LOCAL_BASE_MODEL", "Qwen/Qwen3.8-27B"))
+
+
+def run_round(key, pkg, work, parent_dir, round_index, state_dir, model):
     env = os.environ.copy()
     env.update(PYTHONPATH=str(APP), CONTEST_WORK=str(work),
                CONTEST_PREVIOUS_DIR=str(parent_dir), PYTHONUTF8="1")
@@ -22,7 +30,7 @@ def run_round(key, pkg, work, parent_dir, round_index, state_dir):
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                text=True, encoding="utf-8")
     frame = start_frame(key, pkg, parent_dir, round_index, state_dir)
-    host = Host(frame, stub_model)
+    host = Host(frame, model)
     thread = host.serve(process)
     stderr = process.stderr.read()
     code = process.wait(timeout=600)
@@ -44,10 +52,11 @@ def main():
     pkg = Path(sys.argv[3]) if len(sys.argv) > 3 else package_dir(ROOT, key)
     metric, direction, task = METRIC[key]
     root = Path(tempfile.mkdtemp(prefix="local-%s-" % key))
+    model = pick_model()
     parent_dir, state_dir = pkg, None
     for index in range(1, rounds + 1):
         work = root / ("work-%d" % index)
-        if not run_round(key, pkg, work, parent_dir, index, state_dir):
+        if not run_round(key, pkg, work, parent_dir, index, state_dir, model):
             return 1
         parent_dir = work / ("round-%02d" % index)
         state_dir = work / "state_out"
@@ -61,6 +70,9 @@ def main():
                             capture_output=True)
     print("predict exit:", result.returncode)
     print("predict out:", result.stdout.strip()[:400])
+    if os.environ.get("LOCAL_MODEL") == "pytrio":
+        from pytrio_model import summary
+        print("model stats:", summary())
     return 0 if result.returncode == 0 else 1
 
 

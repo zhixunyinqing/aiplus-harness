@@ -1,0 +1,233 @@
+{
+  "tag": "sft-v2",
+  "model": "Qwen/Qwen3.8-27B",
+  "weights": "trio://run_ibgiij7ethtz/sampler_weights/aiplus-v2",
+  "rounds_per_dataset": 2,
+  "datasets": {
+    "A": [
+      {
+        "round": 1,
+        "decision": {
+          "epochs": 2,
+          "learning_rate": 0.0001,
+          "hypothesis": "当前模型在类别不均衡的工业分类任务上偏向多数类，macro_f1 受少数类拖累。",
+          "change_summary": "在父模型基础上启用类别加权损失，按训练集逆频率给少数类更高权重，其余结构不变。",
+          "reason": "首轮无历史对照，按任务契约优先修复类别不均衡这一最常见 macro_f1 瓶颈。"
+        },
+        "before": 0.7140297220788709,
+        "after": 0.7150736884591663,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 0.7150736884591663,
+            "epochs": 2,
+            "label": "primary",
+            "learning_rate": 0.0001
+          }
+        ],
+        "drift": {
+          "available": false,
+          "note": "首轮没有上一轮对照"
+        },
+        "model": {
+          "calls": 1,
+          "latency": 10.07,
+          "prompt_tokens": 384,
+          "output_tokens": 106
+        },
+        "wall_seconds": 11.7
+      },
+      {
+        "round": 2,
+        "decision": {
+          "epochs": 2,
+          "learning_rate": 0.0001,
+          "hypothesis": "在类别不均衡的工业分类任务上，模型偏向多数类，macro_f1 受少数类拖累。",
+          "change_summary": "epochs=2，learning_rate=0.0001，其余超参与父模型一致。",
+          "reason": "按当前指标与漂移信号选择该改动。"
+        },
+        "before": 0.7150736884591663,
+        "after": 0.7171644944743796,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 0.7171644944743796,
+            "epochs": 2,
+            "label": "primary",
+            "learning_rate": 0.0001
+          }
+        ],
+        "drift": {
+          "available": true,
+          "drift": false,
+          "feature_shift": 0.0,
+          "label_shift": 0.0,
+          "rows_before": 445,
+          "rows_now": 445,
+          "top_features": [
+            127,
+            126,
+            125
+          ]
+        },
+        "model": {
+          "calls": 1,
+          "latency": 3.78,
+          "prompt_tokens": 537,
+          "output_tokens": 92
+        },
+        "wall_seconds": 5.4
+      }
+    ],
+    "B": [
+      {
+        "round": 1,
+        "decision": {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "hypothesis": "在数据集 B 上，epochs=2 与 learning_rate=0.001 的网格组合相对父模型更优。",
+          "change_summary": "epochs=2，learning_rate=0.001，其余超参与父模型一致。",
+          "reason": "该组合在公开验证集上取得 rmse=0.0000，优于父模型 0.0000。"
+        },
+        "before": 681.1598326043113,
+        "after": 664.6134054302968,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 664.6134054302968,
+            "epochs": 2,
+            "label": "primary",
+            "learning_rate": 0.001
+          }
+        ],
+        "drift": {
+          "available": false,
+          "note": "首轮没有上一轮对照"
+        },
+        "model": {
+          "calls": 1,
+          "latency": 4.67,
+          "prompt_tokens": 388,
+          "output_tokens": 114
+        },
+        "wall_seconds": 7.7
+      },
+      {
+        "round": 2,
+        "decision": {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "hypothesis": "epochs=2 与 learning_rate=0.001 的网格组合相对父模型更优。",
+          "change_summary": "epochs=2, learning_rate=0.001",
+          "reason": "网格搜索 epochs=2, learning_rate=0.001 相对父模型更优。"
+        },
+        "before": 664.6134054302968,
+        "after": 653.4151219694959,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 653.4151219694959,
+            "epochs": 2,
+            "label": "primary",
+            "learning_rate": 0.001
+          }
+        ],
+        "drift": {
+          "available": true,
+          "drift": false,
+          "feature_shift": 0.0,
+          "rows_before": 7032,
+          "rows_now": 7032,
+          "target_shift": 0.0,
+          "top_features": [
+            33,
+            32,
+            31
+          ]
+        },
+        "model": {
+          "calls": 1,
+          "latency": 3.77,
+          "prompt_tokens": 542,
+          "output_tokens": 92
+        },
+        "wall_seconds": 6.8
+      }
+    ],
+    "C": [
+      {
+        "round": 1,
+        "decision": {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "hypothesis": "在数据集 C 上，epochs=2 与 learning_rate=0.001 的网格组合相对父模型更优。",
+          "change_summary": "epochs=2，learning_rate=0.001。",
+          "reason": "epochs=2 与 learning_rate=0.001 的网格组合相对父模型更优。"
+        },
+        "before": 52.86857256611151,
+        "after": 52.832700718929075,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 52.832700718929075,
+            "epochs": 2,
+            "label": "primary",
+            "learning_rate": 0.001
+          }
+        ],
+        "drift": {
+          "available": false,
+          "note": "首轮没有上一轮对照"
+        },
+        "model": {
+          "calls": 1,
+          "latency": 4.45,
+          "prompt_tokens": 388,
+          "output_tokens": 101
+        },
+        "wall_seconds": 22.0
+      },
+      {
+        "round": 2,
+        "decision": {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "hypothesis": "epochs=2 与 learning_rate=0.001 的网格组合相对父模型更优。",
+          "change_summary": "epochs=2, learning_rate=0.001",
+          "reason": "网格搜索 epochs=2, learning_rate=0.001 相对父模型更优。"
+        },
+        "before": 52.832700718929075,
+        "after": 52.09658833564111,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 52.09658833564111,
+            "epochs": 2,
+            "label": "primary",
+            "learning_rate": 0.001
+          }
+        ],
+        "drift": {
+          "available": true,
+          "drift": false,
+          "feature_shift": 0.0,
+          "rows_before": 113089,
+          "rows_now": 113089,
+          "target_shift": 0.0,
+          "top_features": [
+            23,
+            22,
+            21
+          ]
+        },
+        "model": {
+          "calls": 1,
+          "latency": 4.31,
+          "prompt_tokens": 547,
+          "output_tokens": 92
+        },
+        "wall_seconds": 21.8
+      }
+    ]
+  }
+}

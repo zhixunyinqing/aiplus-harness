@@ -1,0 +1,965 @@
+{
+  "A": [
+    {
+      "state": "initial",
+      "best": {
+        "epochs": 2,
+        "learning_rate": 0.001,
+        "before": 0.7140297220788709,
+        "after": 0.7187354630392223
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 0.7140297220788709,
+          "after": 0.716641406136452
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 0.7140297220788709,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 0.7140297220788709,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 0.7140297220788709,
+          "after": 0.7187354630392223
+        },
+        {
+          "epochs": 3,
+          "learning_rate": 0.0005,
+          "before": 0.7140297220788709,
+          "after": 0.7187354630392223
+        },
+        {
+          "epochs": 3,
+          "learning_rate": 0.001,
+          "before": 0.7140297220788709,
+          "after": 0.7187354630392223
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 0.7140297220788709,
+          "after": 0.7187354630392223
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 0.7140297220788709,
+          "after": 0.716641406136452
+        },
+        {
+          "epochs": 8,
+          "learning_rate": 0.0005,
+          "before": 0.7140297220788709,
+          "after": 0.716641406136452
+        },
+        {
+          "epochs": 8,
+          "learning_rate": 0.001,
+          "before": 0.7140297220788709,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 0.7140297220788709,
+          "after": 0.7182115117072922
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 0.7140297220788709,
+          "after": 0.7176878592653493
+        }
+      ]
+    },
+    {
+      "state": "round1",
+      "best": {
+        "epochs": 10,
+        "learning_rate": 0.001,
+        "before": 0.716641406136452,
+        "after": 0.7182115117072922
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 0.716641406136452,
+          "after": 0.716641406136452
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 0.716641406136452,
+          "after": 0.716641406136452
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 0.716641406136452,
+          "after": 0.7171644944743796
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 0.716641406136452,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 0.716641406136452,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 0.716641406136452,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 0.716641406136452,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 0.716641406136452,
+          "after": 0.7182115117072922
+        }
+      ]
+    },
+    {
+      "state": "round2",
+      "best": {
+        "epochs": 1,
+        "learning_rate": 0.001,
+        "before": 0.7257820444850657,
+        "after": 0.7268296482589388
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 0.7257820444850657,
+          "after": 0.7257820444850657
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 0.7257820444850657,
+          "after": 0.7268296482589388
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 0.7257820444850657,
+          "after": 0.7257820444850657
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 0.7257820444850657,
+          "after": 0.7182115117072922
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 0.7257820444850657,
+          "after": 0.716641406136452
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 0.7257820444850657,
+          "after": 0.725258679694096
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 0.7257820444850657,
+          "after": 0.7161804458184879
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 0.7257820444850657,
+          "after": 0.7156581637303541
+        }
+      ]
+    },
+    {
+      "state": "sft1-round1",
+      "best": {
+        "epochs": 2,
+        "learning_rate": 0.0005,
+        "before": 0.7176878592653493,
+        "after": 0.719259724542134
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 0.7176878592653493,
+          "after": 0.7187354630392223
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 0.7176878592653493,
+          "after": 0.7176012389894796
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 0.7176878592653493,
+          "after": 0.719259724542134
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 0.7176878592653493,
+          "after": 0.718330334548889
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 0.7176878592653493,
+          "after": 0.716641406136452
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 0.7176878592653493,
+          "after": 0.7171644944743796
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 0.7176878592653493,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 0.7176878592653493,
+          "after": 0.7150736884591663
+        }
+      ]
+    },
+    {
+      "state": "sft1-round2",
+      "best": {
+        "epochs": 10,
+        "learning_rate": 0.001,
+        "before": 0.719259724542134,
+        "after": 0.7268296482589388
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 0.719259724542134,
+          "after": 0.7187354630392223
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 0.719259724542134,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 0.719259724542134,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 0.719259724542134,
+          "after": 0.716641406136452
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 0.719259724542134,
+          "after": 0.7176878592653493
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 0.719259724542134,
+          "after": 0.7187354630392223
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 0.719259724542134,
+          "after": 0.7171644944743796
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 0.719259724542134,
+          "after": 0.7268296482589388
+        }
+      ]
+    }
+  ],
+  "B": [
+    {
+      "state": "initial",
+      "best": {
+        "epochs": 8,
+        "learning_rate": 0.0005,
+        "before": 681.1598326043113,
+        "after": 651.0408387280386
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 681.1598326043113,
+          "after": 652.5778442585915
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 681.1598326043113,
+          "after": 664.6490427480561
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 681.1598326043113,
+          "after": 661.4759649158799
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 681.1598326043113,
+          "after": 664.6134054302968
+        },
+        {
+          "epochs": 3,
+          "learning_rate": 0.0005,
+          "before": 681.1598326043113,
+          "after": 668.6262330171227
+        },
+        {
+          "epochs": 3,
+          "learning_rate": 0.001,
+          "before": 681.1598326043113,
+          "after": 670.464514243578
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 681.1598326043113,
+          "after": 658.1329921352617
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 681.1598326043113,
+          "after": 668.7688745394108
+        },
+        {
+          "epochs": 8,
+          "learning_rate": 0.0005,
+          "before": 681.1598326043113,
+          "after": 651.0408387280386
+        },
+        {
+          "epochs": 8,
+          "learning_rate": 0.001,
+          "before": 681.1598326043113,
+          "after": 654.1750255671766
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 681.1598326043113,
+          "after": 663.138356409415
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 681.1598326043113,
+          "after": 675.8659917963355
+        }
+      ]
+    },
+    {
+      "state": "round1",
+      "best": {
+        "epochs": 5,
+        "learning_rate": 0.0005,
+        "before": 675.8659917963355,
+        "after": 659.1192678490321
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 675.8659917963355,
+          "after": 669.772920137676
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 675.8659917963355,
+          "after": 672.193492365824
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 675.8659917963355,
+          "after": 674.9316057060314
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 675.8659917963355,
+          "after": 678.7002714602144
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 675.8659917963355,
+          "after": 659.1192678490321
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 675.8659917963355,
+          "after": 663.6360593953133
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 675.8659917963355,
+          "after": 685.6245322406508
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 675.8659917963355,
+          "after": 689.3009057680819
+        }
+      ]
+    },
+    {
+      "state": "round2",
+      "best": {
+        "epochs": 2,
+        "learning_rate": 0.0005,
+        "before": 669.8737659643856,
+        "after": 663.8747707872227
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 669.8737659643856,
+          "after": 677.4736724296944
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 669.8737659643856,
+          "after": 678.0083860685053
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 669.8737659643856,
+          "after": 663.8747707872227
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 669.8737659643856,
+          "after": 672.3241973148474
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 669.8737659643856,
+          "after": 678.4623994196662
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 669.8737659643856,
+          "after": 679.620992039213
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 669.8737659643856,
+          "after": 681.1157861334048
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 669.8737659643856,
+          "after": 694.8695375129843
+        }
+      ]
+    },
+    {
+      "state": "sft1-round1",
+      "best": {
+        "epochs": 2,
+        "learning_rate": 0.001,
+        "before": 661.4759649158799,
+        "after": 652.4148585801627
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 661.4759649158799,
+          "after": 668.6262330171227
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 661.4759649158799,
+          "after": 669.5490369776062
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 661.4759649158799,
+          "after": 659.6843625310438
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 661.4759649158799,
+          "after": 652.4148585801627
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 661.4759649158799,
+          "after": 657.523471480773
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 661.4759649158799,
+          "after": 661.9743490795706
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 661.4759649158799,
+          "after": 668.278744901193
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 661.4759649158799,
+          "after": 677.5390453173151
+        }
+      ]
+    },
+    {
+      "state": "sft1-round2",
+      "best": {
+        "epochs": 2,
+        "learning_rate": 0.0005,
+        "before": 659.6843625310438,
+        "after": 655.0978906119709
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 659.6843625310438,
+          "after": 658.1329921352617
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 659.6843625310438,
+          "after": 666.5669397185063
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 659.6843625310438,
+          "after": 655.0978906119709
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 659.6843625310438,
+          "after": 661.3290497164886
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 659.6843625310438,
+          "after": 663.6487607942729
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 659.6843625310438,
+          "after": 661.3487175782031
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 659.6843625310438,
+          "after": 660.3328337947357
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 659.6843625310438,
+          "after": 670.0489663957769
+        }
+      ]
+    }
+  ],
+  "C": [
+    {
+      "state": "initial",
+      "best": {
+        "epochs": 8,
+        "learning_rate": 0.0005,
+        "before": 52.86857256611151,
+        "after": 51.66962392395489
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 52.86857256611151,
+          "after": 52.308973726469716
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 52.86857256611151,
+          "after": 51.899322310868136
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 52.86857256611151,
+          "after": 51.86840050787936
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 52.86857256611151,
+          "after": 52.832700718929075
+        },
+        {
+          "epochs": 3,
+          "learning_rate": 0.0005,
+          "before": 52.86857256611151,
+          "after": 51.95046399608247
+        },
+        {
+          "epochs": 3,
+          "learning_rate": 0.001,
+          "before": 52.86857256611151,
+          "after": 53.04776235582437
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 52.86857256611151,
+          "after": 51.876215725099165
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 52.86857256611151,
+          "after": 51.841942536158925
+        },
+        {
+          "epochs": 8,
+          "learning_rate": 0.0005,
+          "before": 52.86857256611151,
+          "after": 51.66962392395489
+        },
+        {
+          "epochs": 8,
+          "learning_rate": 0.001,
+          "before": 52.86857256611151,
+          "after": 51.73696351285194
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 52.86857256611151,
+          "after": 51.965138344590315
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 52.86857256611151,
+          "after": 52.1223575503567
+        }
+      ]
+    },
+    {
+      "state": "round1",
+      "best": {
+        "epochs": 2,
+        "learning_rate": 0.001,
+        "before": 52.1223575503567,
+        "after": 51.59128278811512
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 52.1223575503567,
+          "after": 51.682315461975485
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 52.1223575503567,
+          "after": 51.88150487131098
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 52.1223575503567,
+          "after": 51.912836641169285
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 52.1223575503567,
+          "after": 51.59128278811512
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 52.1223575503567,
+          "after": 51.74218920145411
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 52.1223575503567,
+          "after": 51.96056197878771
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 52.1223575503567,
+          "after": 51.609880327545376
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 52.1223575503567,
+          "after": 51.85628769108332
+        }
+      ]
+    },
+    {
+      "state": "round2",
+      "best": {
+        "epochs": 10,
+        "learning_rate": 0.001,
+        "before": 51.635202510825884,
+        "after": 51.432548519361255
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 51.635202510825884,
+          "after": 52.18690267576564
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 51.635202510825884,
+          "after": 51.80002300860402
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 51.635202510825884,
+          "after": 51.80799919525457
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 51.635202510825884,
+          "after": 51.98869916167643
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 51.635202510825884,
+          "after": 52.222196884418736
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 51.635202510825884,
+          "after": 52.203266749024834
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 51.635202510825884,
+          "after": 51.846874137832486
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 51.635202510825884,
+          "after": 51.432548519361255
+        }
+      ]
+    },
+    {
+      "state": "sft1-round1",
+      "best": {
+        "epochs": 5,
+        "learning_rate": 0.0005,
+        "before": 51.66962392395489,
+        "after": 51.87525941950373
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 51.66962392395489,
+          "after": 52.53098454884788
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 51.66962392395489,
+          "after": 53.90100315336353
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 51.66962392395489,
+          "after": 51.965138344590315
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 51.66962392395489,
+          "after": 52.22577898432003
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 51.66962392395489,
+          "after": 51.87525941950373
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 51.66962392395489,
+          "after": 52.10274742096608
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 51.66962392395489,
+          "after": 52.041388249934485
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 51.66962392395489,
+          "after": 51.95593099727178
+        }
+      ]
+    },
+    {
+      "state": "sft1-round2",
+      "best": {
+        "epochs": 5,
+        "learning_rate": 0.0005,
+        "before": 51.66962392395489,
+        "after": 51.87525941950373
+      },
+      "runs": [
+        {
+          "epochs": 1,
+          "learning_rate": 0.0005,
+          "before": 51.66962392395489,
+          "after": 52.53098454884788
+        },
+        {
+          "epochs": 1,
+          "learning_rate": 0.001,
+          "before": 51.66962392395489,
+          "after": 53.90100315336353
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.0005,
+          "before": 51.66962392395489,
+          "after": 51.965138344590315
+        },
+        {
+          "epochs": 2,
+          "learning_rate": 0.001,
+          "before": 51.66962392395489,
+          "after": 52.22577898432003
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.0005,
+          "before": 51.66962392395489,
+          "after": 51.87525941950373
+        },
+        {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "before": 51.66962392395489,
+          "after": 52.10274742096608
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.0005,
+          "before": 51.66962392395489,
+          "after": 52.041388249934485
+        },
+        {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "before": 51.66962392395489,
+          "after": 51.95593099727178
+        }
+      ]
+    }
+  ]
+}

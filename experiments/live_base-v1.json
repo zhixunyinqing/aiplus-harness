@@ -1,0 +1,238 @@
+{
+  "tag": "base-v1",
+  "model": "Qwen/Qwen3.8-27B",
+  "rounds_per_dataset": 2,
+  "datasets": {
+    "A": [
+      {
+        "round": 1,
+        "decision": {
+          "epochs": 5,
+          "learning_rate": 0.001,
+          "hypothesis": "作为首轮基线，假设标准学习率0.001配合5个epoch足以让模型收敛到合理的macro_f1水平，建立性能基准。",
+          "change_summary": "初始化训练配置，设定epochs为5，learning_rate为0.001，无父模型对比，直接建立基线。",
+          "reason": "由于是首轮运行且无历史数据，采用工业界通用的保守默认超参数（lr=0.001, epochs=5）以确保训练稳定性并获取初始性能指标。"
+        },
+        "before": 0.7140297220788709,
+        "after": 0.716641406136452,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 0.716641406136452,
+            "epochs": 5,
+            "label": "primary",
+            "learning_rate": 0.001
+          }
+        ],
+        "drift": {
+          "available": false,
+          "note": "首轮没有上一轮对照"
+        },
+        "model": {
+          "calls": 1,
+          "latency": 4.25,
+          "prompt_tokens": 384,
+          "output_tokens": 149
+        },
+        "wall_seconds": 5.8
+      },
+      {
+        "round": 2,
+        "decision": {
+          "epochs": 8,
+          "learning_rate": 0.001,
+          "hypothesis": "假设当前模型在5个epoch后尚未完全收敛，增加训练轮次至8个epoch，同时保持学习率不变，能进一步提升模型对分类边界的拟合能力，从而提高macro_f1。",
+          "change_summary": "保持学习率0.001不变，将训练轮次从5增加到8，以允许模型在相同优化路径下继续降低损失并提升验证集表现。",
+          "reason": "第1轮结果显示macro_f1从0.7140提升至0.7166，表明模型仍在有效学习阶段且无过拟合迹象，增加epoch是低风险且直接的优化手段。"
+        },
+        "before": 0.716641406136452,
+        "after": 0.7257820444850657,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 0.7257820444850657,
+            "epochs": 8,
+            "label": "primary",
+            "learning_rate": 0.001
+          }
+        ],
+        "drift": {
+          "available": true,
+          "drift": false,
+          "feature_shift": 0.0,
+          "label_shift": 0.0,
+          "rows_before": 445,
+          "rows_now": 445,
+          "top_features": [
+            127,
+            126,
+            125
+          ]
+        },
+        "model": {
+          "calls": 1,
+          "latency": 4.73,
+          "prompt_tokens": 544,
+          "output_tokens": 170
+        },
+        "wall_seconds": 6.2
+      }
+    ],
+    "B": [
+      {
+        "round": 1,
+        "decision": {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "hypothesis": "作为首轮基线，假设标准学习率0.001配合10个epoch足以让模型收敛至合理水平，建立初始RMSE基准。",
+          "change_summary": "初始化训练配置，设定epochs为10，learning_rate为0.001，无父模型对比，建立基线。",
+          "reason": "无历史轮次数据，采用工业回归任务中常见的稳健默认参数组合，旨在快速获得可评估的基线性能。"
+        },
+        "before": 681.1598326043113,
+        "after": 675.8659917963355,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 675.8659917963355,
+            "epochs": 10,
+            "label": "primary",
+            "learning_rate": 0.001
+          }
+        ],
+        "drift": {
+          "available": false,
+          "note": "首轮没有上一轮对照"
+        },
+        "model": {
+          "calls": 1,
+          "latency": 3.83,
+          "prompt_tokens": 388,
+          "output_tokens": 138
+        },
+        "wall_seconds": 6.9
+      },
+      {
+        "round": 2,
+        "decision": {
+          "epochs": 7,
+          "learning_rate": 0.00025,
+          "hypothesis": "假设降低学习率至0.0005并增加训练轮次至15，能更精细地优化损失曲面，进一步降低RMSE。",
+          "change_summary": "将学习率从0.001降至0.0005，将训练轮次从10增加至15。",
+          "reason": "第1轮基线显示模型在10个epoch后仍有下降空间（RMSE从681降至675），且无数据漂移，故通过更小的学习率和更多轮次来探索更优解。"
+        },
+        "before": 675.8659917963355,
+        "after": 669.8737659643856,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 680.0140740043091,
+            "epochs": 15,
+            "label": "primary",
+            "learning_rate": 0.0005
+          },
+          {
+            "after": 669.8737659643856,
+            "epochs": 7,
+            "label": "fallback",
+            "learning_rate": 0.00025
+          }
+        ],
+        "drift": {
+          "available": true,
+          "drift": false,
+          "feature_shift": 0.0,
+          "rows_before": 7032,
+          "rows_now": 7032,
+          "target_shift": 0.0,
+          "top_features": [
+            33,
+            32,
+            31
+          ]
+        },
+        "model": {
+          "calls": 1,
+          "latency": 4.42,
+          "prompt_tokens": 547,
+          "output_tokens": 161
+        },
+        "wall_seconds": 8.8
+      }
+    ],
+    "C": [
+      {
+        "round": 1,
+        "decision": {
+          "epochs": 10,
+          "learning_rate": 0.001,
+          "hypothesis": "作为首轮基线，假设标准学习率 0.001 配合 10 个 epoch 能在不过拟合的前提下快速收敛至合理 RMSE 水平，建立后续优化的基准参考。",
+          "change_summary": "初始化模型训练配置，设定 epochs 为 10，learning_rate 为 0.001，无父模型对比，确立初始超参数基线。",
+          "reason": "由于是首轮运行且无历史数据或漂移信号，采用工业界回归任务中常见的稳健默认值（lr=0.001, epochs=10）以确保训练稳定性并获取首个有效基线指标。"
+        },
+        "before": 52.86857256611151,
+        "after": 52.1223575503567,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 52.1223575503567,
+            "epochs": 10,
+            "label": "primary",
+            "learning_rate": 0.001
+          }
+        ],
+        "drift": {
+          "available": false,
+          "note": "首轮没有上一轮对照"
+        },
+        "model": {
+          "calls": 1,
+          "latency": 4.94,
+          "prompt_tokens": 388,
+          "output_tokens": 176
+        },
+        "wall_seconds": 25.1
+      },
+      {
+        "round": 2,
+        "decision": {
+          "epochs": 15,
+          "learning_rate": 0.0005,
+          "hypothesis": "假设降低学习率至 0.0005 并增加训练轮次至 15，能更精细地逼近损失函数最小值，从而进一步降低 RMSE，同时避免高学习率导致的震荡。",
+          "change_summary": "将学习率从 0.001 减半至 0.0005，并将 epochs 从 10 增加至 15，以换取更稳定的收敛和更低的最终误差。",
+          "reason": "第 1 轮基线 RMSE 为 52.12，数据无漂移。通常回归任务在初始收敛后，降低学习率并延长训练是降低 RMSE 的标准有效策略，旨在捕捉更细微的特征模式。"
+        },
+        "before": 52.1223575503567,
+        "after": 51.63520251082588,
+        "selected": "candidate",
+        "attempts": [
+          {
+            "after": 51.63520251082588,
+            "epochs": 15,
+            "label": "primary",
+            "learning_rate": 0.0005
+          }
+        ],
+        "drift": {
+          "available": true,
+          "drift": false,
+          "feature_shift": 0.0,
+          "rows_before": 113089,
+          "rows_now": 113089,
+          "target_shift": 0.0,
+          "top_features": [
+            23,
+            22,
+            21
+          ]
+        },
+        "model": {
+          "calls": 1,
+          "latency": 5.55,
+          "prompt_tokens": 560,
+          "output_tokens": 196
+        },
+        "wall_seconds": 26.4
+      }
+    ]
+  }
+}
