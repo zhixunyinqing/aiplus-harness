@@ -1,5 +1,8 @@
 from baselines.train import train_run
 
+B_GRID = [(2, 0.0005), (5, 0.0005), (8, 0.0005), (2, 0.001),
+          (5, 0.001), (10, 0.001), (15, 0.001)]
+
 
 def better(before, after, direction):
     if before is None or after is None:
@@ -9,6 +12,43 @@ def better(before, after, direction):
 
 def metric_value(report, metric):
     return report["validation_after"].get(metric)
+
+
+def candidate_configs(decision, grid, limit):
+    pairs, seen = [], set()
+    for epochs, learning_rate in [(decision["epochs"], decision["learning_rate"])] + list(grid):
+        pair = (max(1, min(10000, int(epochs))), max(0.0001, round(float(learning_rate), 6)))
+        if pair in seen:
+            continue
+        seen.add(pair)
+        pairs.append(pair)
+        if len(pairs) >= limit:
+            break
+    return pairs
+
+
+def search_train(key, train_path, validation_path, parent, decision, work, round_index,
+                 metric, direction, grid, limit=8):
+    best, attempts = None, []
+    for index, (epochs, learning_rate) in enumerate(candidate_configs(decision, grid, limit)):
+        output = work / ("round-%02d-c%d" % (round_index, index))
+        report = train_run(key, train_path, validation_path, output, resume=parent,
+                           epochs=epochs, learning_rate=learning_rate,
+                           stage_id="round-%d-c%d" % (round_index, index))
+        after = metric_value(report, metric)
+        attempts.append({"label": "c%d" % index, "epochs": epochs,
+                         "learning_rate": learning_rate, "after": after})
+        if after is not None and (best is None or _better(after, best["after"], direction)):
+            best = {"output": output, "report": report, "epochs": epochs,
+                    "learning_rate": learning_rate, "after": after}
+    used = dict(decision)
+    used["epochs"], used["learning_rate"] = best["epochs"], best["learning_rate"]
+    used["change_summary"] += "；harness 在模型建议附近扫 %d 组配置，按可见指标取最优。" % len(attempts)
+    return best["output"], best["report"], used, attempts
+
+
+def _better(after, current, direction):
+    return after > current if direction == "higher" else after < current
 
 
 def safe_train(key, train_path, validation_path, parent, decision, work, round_index, metric, direction):

@@ -46,7 +46,7 @@ def run_round(key, pkg, work, parent_dir, round_index, state_dir, model):
     print("  after:", records[-1]["after"], "selected:", records[-1]["selected"],
           "attempts:", len(records[-1]["attempts"]),
           "drift:", json.dumps(records[-1]["drift"], ensure_ascii=False)[:120])
-    return records[-1]["selected"] == "candidate"
+    return records[-1]
 
 
 def main():
@@ -59,11 +59,11 @@ def main():
     parent_dir, state_dir = pkg, None
     for index in range(1, rounds + 1):
         work = root / ("work-%d" % index)
-        selected = run_round(key, pkg, work, parent_dir, index, state_dir, model)
-        if selected is None:
+        last = run_round(key, pkg, work, parent_dir, index, state_dir, model)
+        if last is None:
             return 1
-        if selected:
-            parent_dir = work / ("round-%02d" % index)
+        if last["selected"] == "candidate":
+            parent_dir = work / last["artifact_dir"]
         state_dir = sorted(work.glob("state_out-*"))[-1]
     sample = json.loads((pkg / "public" / "validation.jsonl").read_text(encoding="utf-8").splitlines()[0])
     env = os.environ.copy()
