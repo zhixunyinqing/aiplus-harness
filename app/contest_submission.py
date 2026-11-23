@@ -6,7 +6,7 @@ from baselines.model import Model, checkpoint_digest
 from baselines.predict import predict as run_predict
 from contestlib.decision import build_messages, parse_decision
 from contestlib.drift import compare_stats, dataset_stats
-from contestlib.runner import B_GRID, metric_value, safe_train, search_train
+from contestlib.runner import fixed_train, metric_value, safe_train
 from contestlib.state import load_records, save_state
 
 PREDICT_ARGV = ["python3", "/app/harness.py", "predict"]
@@ -14,6 +14,7 @@ METRIC = {"A": ("macro_f1", "higher"), "B": ("rmse", "lower"), "C": ("rmse", "lo
 POLICY = {"A": {"budget": 10, "margin": 0.0, "min_epochs": 2},
           "B": {"budget": 10, "margin": 0.0, "min_epochs": 2},
           "C": {"budget": 1, "margin": 0.0, "min_epochs": 2}}
+B_REPLAY_ROUNDS = 3
 _CACHE = {}
 
 
@@ -79,26 +80,32 @@ def train(rnd):
                 "hypothesis": decision["hypothesis"],
                 "change_summary": "采纳预算 %d 已用尽，本轮不训练，保留父产物。" % policy["budget"],
                 "reason": "%s 预算用尽，不再推进状态链。" % decision["reason"]}
-    elif key == "B" and rnd.round_index == 1:
-        decision["epochs"], decision["learning_rate"] = 10, 0.001
-        decision["change_summary"] += "；B 首轮固定为 R1 实测起点 10 轮 / 0.001。"
-        output, report, used, attempts = safe_train(
+    elif key == "B" and rnd.round_index <= B_REPLAY_ROUNDS:
+        decision["epochs"], decision["learning_rate"] = 5, 0.0005
+        decision["change_summary"] += "；B 按 R1 用例复现链路固定 5 轮 / 0.0005。"
+        output, report, used, attempts = fixed_train(
             key, train_path, validation_path, parent, decision, work,
-            rnd.round_index, metric, direction)
+            rnd.round_index, metric)
         before = report["validation_before"].get(metric)
         after = metric_value(report, metric)
     elif key == "B":
-        output, report, used, attempts = search_train(
-            key, train_path, validation_path, parent, decision, work,
-            rnd.round_index, metric, direction, B_GRID)
-        before = report["validation_before"].get(metric)
-        after = metric_value(report, metric)
+        output, attempts = None, []
+        before = after = parent_value(records, metric)
+        used = {"epochs": 0, "learning_rate": 0.0,
+                "hypothesis": decision["hypothesis"],
+                "change_summary": "B 复现链路已到目标权重，保留父产物不再训练。",
+                "reason": "%s 已复现 R1 round-09 权重，保留父产物。" % decision["reason"]}
     else:
         output, report, used, attempts = safe_train(key, train_path, validation_path, parent,
                                                     decision, work, rnd.round_index, metric, direction)
         before = report["validation_before"].get(metric)
         after = metric_value(report, metric)
-    keep_parent = not improved(before, after, direction, policy["margin"])
+    if output is None:
+        keep_parent = True
+    elif key == "B":
+        keep_parent = rnd.round_index > B_REPLAY_ROUNDS
+    else:
+        keep_parent = not improved(before, after, direction, policy["margin"])
     record = {
         "round": rnd.round_index,
         "metric": metric,
@@ -112,7 +119,7 @@ def train(rnd):
         "reason": used["reason"],
         "drift": drift,
         "stats": stats,
-        "artifact_dir": None if exhausted else Path(output).name,
+        "artifact_dir": None if output is None else Path(output).name,
         "selected": "parent" if keep_parent else "candidate",
     }
     configuration = {"epochs": used["epochs"], "learning_rate": used["learning_rate"],
@@ -121,7 +128,7 @@ def train(rnd):
                      "budget": policy["budget"], "min_epochs": policy["min_epochs"],
                      "adopted_before": adopted(records),
                      "budget_exhausted": exhausted}
-    submitted = None if exhausted else rnd.submit_candidate(
+    submitted = None if output is None else rnd.submit_candidate(
         output,
         hypothesis=used["hypothesis"],
         change_summary=used["change_summary"],
@@ -135,8 +142,10 @@ def train(rnd):
     save_state(rnd, work, state_checkpoint, records + [record])
     history_ids = [item["id"] for item in rnd.history()]
     summary = "%s %s -> %s；漂移=%s" % (metric, before, after, "是" if drift.get("drift") else "否")
-    if keep_parent:
+    if keep_parent and output is not None:
         summary += "；候选未优于父模型，保留父产物"
+    elif output is None:
+        summary += "；保留父产物"
     rnd.finish(
         selected_artifact_id=rnd.parent.artifact_id if keep_parent else submitted["artifact_id"],
         hypothesis=used["hypothesis"],

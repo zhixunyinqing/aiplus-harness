@@ -51,6 +51,19 @@ def _better(after, current, direction):
     return after > current if direction == "higher" else after < current
 
 
+def fixed_train(key, train_path, validation_path, parent, decision, work, round_index, metric):
+    output = work / ("round-%02d" % round_index)
+    report = train_run(key, train_path, validation_path, output, resume=parent,
+                       epochs=decision["epochs"], learning_rate=decision["learning_rate"],
+                       stage_id="round-%d" % round_index)
+    used = dict(decision)
+    used["change_summary"] += "；按既定链路固定单组配置训练，不回退。"
+    attempts = [{"label": "primary", "epochs": decision["epochs"],
+                 "learning_rate": decision["learning_rate"],
+                 "after": metric_value(report, metric)}]
+    return output, report, used, attempts
+
+
 def safe_train(key, train_path, validation_path, parent, decision, work, round_index, metric, direction):
     primary_dir = work / ("round-%02d" % round_index)
     primary = train_run(key, train_path, validation_path, primary_dir, resume=parent,
