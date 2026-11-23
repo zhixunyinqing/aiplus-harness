@@ -25,6 +25,8 @@ def run_round(key, pkg, work, parent_dir, round_index, state_dir, model):
     env = os.environ.copy()
     env.update(PYTHONPATH=str(APP), CONTEST_WORK=str(work),
                CONTEST_PREVIOUS_DIR=str(parent_dir), PYTHONUTF8="1")
+    work.mkdir(parents=True, exist_ok=True)
+    (work / "state_out").mkdir()
     process = subprocess.Popen([sys.executable, str(APP / "harness.py"), "train"],
                                cwd=str(APP), env=env, stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -39,7 +41,8 @@ def run_round(key, pkg, work, parent_dir, round_index, state_dir, model):
     if code != 0 or host.failure:
         print(stderr[-2000:])
         return None
-    records = json.loads((work / "state_out" / "records.json").read_text(encoding="utf-8"))
+    state_dir = sorted(work.glob("state_out-*"))[-1]
+    records = json.loads((state_dir / "records.json").read_text(encoding="utf-8"))
     print("  after:", records[-1]["after"], "selected:", records[-1]["selected"],
           "attempts:", len(records[-1]["attempts"]),
           "drift:", json.dumps(records[-1]["drift"], ensure_ascii=False)[:120])
@@ -61,7 +64,7 @@ def main():
             return 1
         if selected:
             parent_dir = work / ("round-%02d" % index)
-        state_dir = work / "state_out"
+        state_dir = sorted(work.glob("state_out-*"))[-1]
     sample = json.loads((pkg / "public" / "validation.jsonl").read_text(encoding="utf-8").splitlines()[0])
     env = os.environ.copy()
     env.update(PYTHONPATH=str(APP), PYTHONUTF8="1", CONTEST_TASK=task,

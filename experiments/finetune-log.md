@@ -189,3 +189,13 @@ R3 方向：A/B 取消封顶（回到 10），C 保留 1；给 B 增加 epochs �
 - 本地自检：B 三轮 epochs 均为 4（模型答 3 被抬升）；A 首轮采纳；C 第 2 轮预算耗尽、attempts 0、保留父产物。predict 入口正常。
 - 镜像：`aiplus-harness:r3`，`docker save` 导出 `harness-r3.tar` 63 MiB；标签 `v0.3-floor-r3`。
 - 试运行 #3 配置沿用权重 `aiplus-v2`，不重新微调——先单独验证策略改动的效果。
+
+## 试运行 #3 提交失败与修复（2026-11-23 晚）
+
+- 平台回执：提交不符合题意，要求“基于官方 baseline 和平台提供的父检查点续训，不要从头训练其他模型”；同时入口预检失败。
+- 失败详情：训练入口 `save_state` 报错——`contestlib/state.py` 用 `rnd.state_workspace(/workspace/state_out)` 建输出目录，而 SDK 的 `state_workspace` 在目标目录已存在时直接报 `STATE_DESTINATION_EXISTS`；该方法只负责复制只读状态，不能当输出去。
+- 差异：R1、R2 同一段代码跑满 30 轮，说明宿主现在会预建 `state_out`（或工作区跨轮复用），旧写法不再安全。
+- 修复：读取用唯一 `state_in-<uuid>` 目录；输出改为自建唯一 `state_out-<uuid>` 目录，写完 `records.json` + `checkpoint.npz` 后调用 `rnd.save_state`。不再对固定目录调用 `state_workspace`。
+- 续训证据：提交的 configuration 新增 `resumed_from_parent: true` 和 `parent_checkpoint_sha256`；训练始终把平台父检查点作为 `resume` 传入，代码里不存在无 resume 的训练路径。
+- 本地复现：`local_check.py` 现在每轮开跑前预建 `state_out` 目录模拟宿主；A/B/C 三分支全部通过，predict 正常。
+- 镜像：`aiplus-harness:r4`，导出 `harness-r4.tar` 63 MiB；标签 `v0.4-statefix-r4`。

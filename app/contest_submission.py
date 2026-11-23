@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 
-from baselines.model import Model
+from baselines.model import Model, checkpoint_digest
 from baselines.predict import predict as run_predict
 from contestlib.decision import build_messages, parse_decision
 from contestlib.drift import compare_stats, dataset_stats
@@ -59,6 +59,7 @@ def train(rnd):
     records = load_records(rnd, work)
     parent = work / "parent.npz"
     shutil.copyfile(_parent_path(rnd), parent)
+    parent_sha = checkpoint_digest(parent)
     model = Model.load(parent)
     classes, seed = model.meta["classes"], int(model.meta["seed"])
     policy = POLICY.get(key, {"budget": 10 ** 9, "margin": 0.0, "min_epochs": 2})
@@ -101,6 +102,7 @@ def train(rnd):
     }
     configuration = {"epochs": used["epochs"], "learning_rate": used["learning_rate"],
                      "seed": seed, "drift": drift, "attempts": attempts,
+                     "resumed_from_parent": True, "parent_checkpoint_sha256": parent_sha,
                      "budget": policy["budget"], "min_epochs": policy["min_epochs"],
                      "adopted_before": adopted(records),
                      "budget_exhausted": exhausted}

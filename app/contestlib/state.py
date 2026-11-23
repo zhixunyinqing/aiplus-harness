@@ -1,13 +1,20 @@
 import json
 import shutil
+import uuid
 from pathlib import Path
 
 RECORDS = "records.json"
 CHECKPOINT = "checkpoint.npz"
 
 
+def _fresh(work, prefix):
+    root = Path(work)
+    root.mkdir(parents=True, exist_ok=True)
+    return root / ("%s-%s" % (prefix, uuid.uuid4().hex[:12]))
+
+
 def load_records(rnd, work):
-    source = rnd.state_workspace(str(Path(work) / "state_in"))
+    source = rnd.state_workspace(str(_fresh(work, "state_in")))
     path = Path(source) / RECORDS
     if not path.is_file():
         return []
@@ -19,8 +26,8 @@ def load_records(rnd, work):
 
 
 def save_state(rnd, work, checkpoint, records):
-    target = rnd.state_workspace(str(Path(work) / "state_out"))
-    target = Path(target)
+    target = _fresh(work, "state_out")
+    target.mkdir(parents=True)
     payload = json.dumps(records[-50:], ensure_ascii=False, sort_keys=True)
     (target / RECORDS).write_text(payload, encoding="utf-8")
     shutil.copyfile(checkpoint, target / CHECKPOINT)
