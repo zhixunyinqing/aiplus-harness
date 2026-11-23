@@ -11,9 +11,9 @@ from contestlib.state import load_records, save_state
 
 PREDICT_ARGV = ["python3", "/app/harness.py", "predict"]
 METRIC = {"A": ("macro_f1", "higher"), "B": ("rmse", "lower"), "C": ("rmse", "lower")}
-POLICY = {"A": {"budget": 3, "margin": 0.0},
-          "B": {"budget": 2, "margin": 0.0},
-          "C": {"budget": 1, "margin": 0.0}}
+POLICY = {"A": {"budget": 10, "margin": 0.0, "min_epochs": 2},
+          "B": {"budget": 10, "margin": 0.0, "min_epochs": 4},
+          "C": {"budget": 1, "margin": 0.0, "min_epochs": 2}}
 _CACHE = {}
 
 
@@ -31,6 +31,13 @@ def parent_value(records, metric):
         if item.get("selected") == "candidate":
             value = item.get("after")
     return value
+
+
+def floor_epochs(decision, floor):
+    if decision["epochs"] < floor:
+        decision["epochs"] = floor
+        decision["change_summary"] += "；harness 依公开网格把 epochs 下限设为 %d。" % floor
+    return decision
 
 
 def improved(before, after, direction, margin):
@@ -54,7 +61,7 @@ def train(rnd):
     shutil.copyfile(_parent_path(rnd), parent)
     model = Model.load(parent)
     classes, seed = model.meta["classes"], int(model.meta["seed"])
-    policy = POLICY.get(key, {"budget": 10 ** 9, "margin": 0.0})
+    policy = POLICY.get(key, {"budget": 10 ** 9, "margin": 0.0, "min_epochs": 2})
     exhausted = adopted(records) >= policy["budget"]
 
     stats = dataset_stats(train_path, task, classes)
@@ -62,6 +69,7 @@ def train(rnd):
     messages = build_messages(key, task, metric, direction, records, drift, rnd.round_index - 1)
     reply = rnd.model(messages, max_tokens=min(600, rnd.max_output_tokens), temperature=0.2)
     decision = parse_decision(reply.text, key, "第 %d 轮：沿用父模型并小步微调。" % rnd.round_index)
+    decision = floor_epochs(decision, policy["min_epochs"])
 
     if exhausted:
         output, attempts = None, []
@@ -93,7 +101,8 @@ def train(rnd):
     }
     configuration = {"epochs": used["epochs"], "learning_rate": used["learning_rate"],
                      "seed": seed, "drift": drift, "attempts": attempts,
-                     "budget": policy["budget"], "adopted_before": adopted(records),
+                     "budget": policy["budget"], "min_epochs": policy["min_epochs"],
+                     "adopted_before": adopted(records),
                      "budget_exhausted": exhausted}
     submitted = None if exhausted else rnd.submit_candidate(
         output,
