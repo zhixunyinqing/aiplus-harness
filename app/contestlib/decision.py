@@ -1,4 +1,5 @@
 import json
+import math
 import re
 
 DEFAULTS = {
@@ -55,11 +56,12 @@ def parse_decision(text, dataset, fallback_reason):
     }
     if not isinstance(data, dict):
         return result
-    if _is_int(data.get("epochs")):
-        result["epochs"] = max(2, min(20, int(data["epochs"])))
-    rate = data.get("learning_rate")
-    if isinstance(rate, (int, float)) and not isinstance(rate, bool) and rate > 0:
-        result["learning_rate"] = max(0.0001, min(0.005, float(rate)))
+    epochs = _number(data.get("epochs"))
+    if epochs is not None:
+        result["epochs"] = max(2, min(20, int(epochs)))
+    rate = _number(data.get("learning_rate"))
+    if rate is not None and rate > 0:
+        result["learning_rate"] = max(0.0001, min(0.005, rate))
     for key in ("hypothesis", "change_summary", "reason"):
         value = data.get(key)
         if isinstance(value, str) and value.strip():
@@ -67,8 +69,19 @@ def parse_decision(text, dataset, fallback_reason):
     return result
 
 
-def _is_int(value):
-    return isinstance(value, int) and not isinstance(value, bool)
+def _number(value):
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        number = float(value)
+    elif isinstance(value, str):
+        try:
+            number = float(value.strip())
+        except ValueError:
+            return None
+    else:
+        return None
+    return number if math.isfinite(number) else None
 
 
 def _extract_json(text):

@@ -65,45 +65,60 @@ def train(rnd):
     classes, seed = model.meta["classes"], int(model.meta["seed"])
     policy = POLICY.get(key, {"budget": 10 ** 9, "margin": 0.0, "min_epochs": 2})
     exhausted = adopted(records) >= policy["budget"]
+    replay = key == "B" and not exhausted and adopted(records) < B_REPLAY_ROUNDS
 
-    stats = dataset_stats(train_path, task, classes)
-    drift = compare_stats(stats, records[-1].get("stats") if records else None, task)
+    try:
+        stats = dataset_stats(train_path, task, classes)
+        drift = compare_stats(stats, records[-1].get("stats") if records else None, task)
+    except Exception as exc:
+        stats = {}
+        drift = {"available": False, "note": "统计不可用：%s" % type(exc).__name__}
     messages = build_messages(key, task, metric, direction, records, drift, rnd.round_index - 1)
     reply = rnd.model(messages, max_tokens=min(600, rnd.max_output_tokens), temperature=0.2)
     decision = parse_decision(reply.text, key, "第 %d 轮：沿用父模型并小步微调。" % rnd.round_index)
     decision = floor_epochs(decision, policy["min_epochs"])
 
-    if exhausted:
+    failure = None
+    try:
+        if exhausted:
+            output, attempts = None, []
+            before = after = parent_value(records, metric)
+            used = {"epochs": 0, "learning_rate": 0.0,
+                    "hypothesis": decision["hypothesis"],
+                    "change_summary": "采纳预算 %d 已用尽，本轮不训练，保留父产物。" % policy["budget"],
+                    "reason": "%s 预算用尽，不再推进状态链。" % decision["reason"]}
+        elif replay:
+            decision["epochs"], decision["learning_rate"] = 5, 0.0005
+            decision["change_summary"] += "；B 按已验证链路固定 5 轮 / 0.0005。"
+            output, report, used, attempts = fixed_train(
+                key, train_path, validation_path, parent, decision, work,
+                rnd.round_index, metric)
+            before = report["validation_before"].get(metric)
+            after = metric_value(report, metric)
+        elif key == "B":
+            output, attempts = None, []
+            before = after = parent_value(records, metric)
+            used = {"epochs": 0, "learning_rate": 0.0,
+                    "hypothesis": decision["hypothesis"],
+                    "change_summary": "B 复现链已完成 3 次采纳，保留父产物不再训练。",
+                    "reason": "%s B 链路已固定，保留父产物以节省资源。" % decision["reason"]}
+        else:
+            output, report, used, attempts = safe_train(key, train_path, validation_path, parent,
+                                                        decision, work, rnd.round_index, metric, direction)
+            before = report["validation_before"].get(metric)
+            after = metric_value(report, metric)
+    except Exception as exc:
+        failure = type(exc).__name__
         output, attempts = None, []
         before = after = parent_value(records, metric)
         used = {"epochs": 0, "learning_rate": 0.0,
                 "hypothesis": decision["hypothesis"],
-                "change_summary": "采纳预算 %d 已用尽，本轮不训练，保留父产物。" % policy["budget"],
-                "reason": "%s 预算用尽，不再推进状态链。" % decision["reason"]}
-    elif key == "B" and rnd.round_index <= B_REPLAY_ROUNDS:
-        decision["epochs"], decision["learning_rate"] = 5, 0.0005
-        decision["change_summary"] += "；B 按 R1 用例复现链路固定 5 轮 / 0.0005。"
-        output, report, used, attempts = fixed_train(
-            key, train_path, validation_path, parent, decision, work,
-            rnd.round_index, metric)
-        before = report["validation_before"].get(metric)
-        after = metric_value(report, metric)
-    elif key == "B":
-        output, attempts = None, []
-        before = after = parent_value(records, metric)
-        used = {"epochs": 0, "learning_rate": 0.0,
-                "hypothesis": decision["hypothesis"],
-                "change_summary": "B 复现链路已到目标权重，保留父产物不再训练。",
-                "reason": "%s 已复现 R1 round-09 权重，保留父产物。" % decision["reason"]}
-    else:
-        output, report, used, attempts = safe_train(key, train_path, validation_path, parent,
-                                                    decision, work, rnd.round_index, metric, direction)
-        before = report["validation_before"].get(metric)
-        after = metric_value(report, metric)
+                "change_summary": "本轮训练异常（%s），保留父产物以完成轮次。" % failure,
+                "reason": "%s 训练异常，按稳健策略不推进状态链。" % decision["reason"]}
     if output is None:
         keep_parent = True
     elif key == "B":
-        keep_parent = rnd.round_index > B_REPLAY_ROUNDS
+        keep_parent = not replay
     else:
         keep_parent = not improved(before, after, direction, policy["margin"])
     record = {
@@ -121,13 +136,15 @@ def train(rnd):
         "stats": stats,
         "artifact_dir": None if output is None else Path(output).name,
         "selected": "parent" if keep_parent else "candidate",
+        "failure": failure,
     }
     configuration = {"epochs": used["epochs"], "learning_rate": used["learning_rate"],
                      "seed": seed, "drift": drift, "attempts": attempts,
                      "resumed_from_parent": True, "parent_checkpoint_sha256": parent_sha,
                      "budget": policy["budget"], "min_epochs": policy["min_epochs"],
                      "adopted_before": adopted(records),
-                     "budget_exhausted": exhausted}
+                     "budget_exhausted": exhausted, "replay": replay,
+                     "failure": failure}
     submitted = None if output is None else rnd.submit_candidate(
         output,
         hypothesis=used["hypothesis"],
@@ -138,6 +155,9 @@ def train(rnd):
         code_paths=[],
         predict_argv=PREDICT_ARGV,
     )
+    if submitted is None:
+        keep_parent = True
+        record["selected"] = "parent"
     state_checkpoint = parent if keep_parent else output / "checkpoint.npz"
     save_state(rnd, work, state_checkpoint, records + [record])
     history_ids = [item["id"] for item in rnd.history()]
@@ -159,11 +179,13 @@ def train(rnd):
 
 
 def predict(sample, model_dir):
-    model = _CACHE.get("model")
+    path = os.environ.get("CONTEST_ARTIFACT_PATH") or str(Path(model_dir) / "checkpoint.npz")
+    key = str(Path(path).resolve())
+    model = _CACHE.get(key)
     if model is None:
-        path = os.environ.get("CONTEST_ARTIFACT_PATH") or str(Path(model_dir) / "checkpoint.npz")
-        model = Model.load(path)
-        _CACHE["model"] = model
+        model = Model.load(key)
+        _CACHE.clear()
+        _CACHE[key] = model
     return run_predict(model, sample.inputs)
 
 

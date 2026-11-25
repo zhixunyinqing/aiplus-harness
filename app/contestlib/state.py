@@ -20,9 +20,11 @@ def load_records(rnd, work):
         return []
     try:
         records = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, ValueError):
         return []
-    return records if isinstance(records, list) else []
+    if not isinstance(records, list):
+        return []
+    return [item for item in records if isinstance(item, dict)]
 
 
 def save_state(rnd, work, checkpoint, records):

@@ -24,6 +24,9 @@ def dataset_stats(path, task, classes):
 def compare_stats(current, previous, task):
     if not previous:
         return {"available": False, "note": "首轮没有上一轮对照"}
+    if not isinstance(previous, dict) or not all(
+            isinstance(previous.get(key), list) for key in ("mean", "scale")):
+        return {"available": False, "note": "上一轮统计不完整"}
     mean_now = np.asarray(current["mean"])
     mean_old = np.asarray(previous["mean"])
     scale_old = np.asarray(previous["scale"])

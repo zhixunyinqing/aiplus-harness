@@ -17,7 +17,10 @@ app/
   baselines/               父模型定义、数据读取、训练与预测实现
 sdk/                       contest_harness SDK 1.0.4（构建镜像时安装）
 Dockerfile                 平台镜像构建文件
-tools/log_swanlab.py       把本地轮次指标写入 SwanLab 实验记录
+Dockerfile.rebuild         基于已验收镜像覆盖 /app 的增量构建文件
+tools/                     SwanLab 记录、PyTRIO 评测、SFT 数据构造与训练脚本
+experiments/               试运行记录与微调日志（finetune-log.md）
+local_check.py             本地回环自检（A/B/C、桩模型或 PyTRIO 真模型）
 ```
 
 ## 方案要点
@@ -25,30 +28,39 @@ tools/log_swanlab.py       把本地轮次指标写入 SwanLab 实验记录
 1. 每轮从父检查点续训，不重跑全量初始化。
 2. 决策来自平台模型：每轮把历史指标、漂移状态交给 `rnd.model()`，得到
    `epochs` / `learning_rate` 与假设说明；JSON 解析失败时回退到保守默认值。
-3. `safe_train` 先跑主方案，未超过父模型时自动减半 epochs 和学习率再跑一次，
+3. 数据集策略：A 预算 10 / epochs 下限 2；B 前 3 次采纳固定 5 轮 / 0.0005，
+   之后停训保留父产物；C 预算 1 / 下限 2。
+4. `safe_train`（A/C）先跑主方案，未超过父模型时自动减半 epochs 和学习率再跑一次，
    两次都不优于父模型则保留父产物，避免回退。
-4. 平台测量值才是唯一分数来源，代码不另报分数；选择理由写入 `finish`。
+5. 训练异常时保留父产物并正常结束轮次；平台测量值才是唯一分数来源，
+   选择理由写入 `finish`。
 
 ## 构建镜像
 
 ```sh
-docker build --platform linux/amd64 \
-  --build-arg BASE_PYTHON=docker.m.daocloud.io/library/python:3.12-slim \
-  --build-arg PIP_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple \
-  -t aiplus-harness:0.1 .
-docker run --rm aiplus-harness:0.1
+# 从已验收的 aiplus-harness:0.1 派生，只覆盖 /app
+docker build -f Dockerfile.rebuild -t aiplus-harness:r7 .
+docker run --rm aiplus-harness:r7      # 输出 describe JSON
 ```
 
 平台通过 `/image-archives` 接收 `docker save` 导出的单个 Linux/amd64 未压缩 tar：
 
 ```sh
-docker save -o aiplus-harness-image.tar aiplus-harness:0.1
+docker save -o harness-r7.tar aiplus-harness:r7
 ```
 
 ## 本地校验
 
-仓库内不包含赛题数据包。把公开的 `train.jsonl` / `validation.jsonl` 放到本地目录后，
-可复用 `local_frame.py` 的帧构造与回环宿主跑通 `train` 与 `predict` 协议。
+仓库内不包含赛题数据包。默认读取 `Desktop/AI+/数据包A`、`数据包B_extracted`、
+`数据包C_extracted`；也可把数据包路径作为第三个参数传入。
+
+```sh
+python local_check.py A 1          # 子命令：数据集、轮数、可选数据包路径
+python local_check.py B 4
+python local_check.py C 2 "<绝对路径>/数据包C_extracted"
+LOCAL_MODEL=pytrio python local_check.py A 1   # 用真实 Qwen 驱动
+```
+
 关键检查项：`describe` 输出一行 JSON、每轮至少一次真实模型调用、候选目录只含普通文件。
 
 ## 实验记录
