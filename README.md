@@ -71,6 +71,9 @@ swanlab login
 python tools/log_swanlab.py --dataset B --records <state_out/records.json> --model <基础模型名>
 ```
 
+R7 试运行结果：A Macro F1 0.8800；B RMSE 679.36（与 R6 逐位相同）；
+C RMSE 56.58；CPU 合计 3,313.50s；Token 44,451。正式提交镜像为 r7。
+
 ## 提交信息
 
 - 模型类型：平台白名单基础模型 Qwen/Qwen3.8-27B（二次确认）

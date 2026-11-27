@@ -1,0 +1,372 @@
+<!doctype html><html><head><meta charset='utf-8'><style>
+@page { size: A4; margin: 16mm 14mm 16mm 14mm; }
+* { box-sizing: border-box; }
+body { font-family: "Microsoft YaHei", "SimSun", sans-serif; font-size: 10.5pt;
+       line-height: 1.65; color: #222; margin: 0; }
+h1 { font-size: 20pt; text-align: center; margin: 0 0 6mm; color: #123a6b; }
+h2 { font-size: 14pt; margin: 7mm 0 3mm; padding-bottom: 1.5mm;
+     border-bottom: 1.5px solid #123a6b; color: #123a6b; page-break-after: avoid; }
+h3 { font-size: 11.5pt; margin: 5mm 0 2mm; color: #1f4e79; page-break-after: avoid; }
+p { margin: 0 0 2.4mm; text-align: justify; }
+ul, ol { margin: 0 0 2.5mm 5mm; padding-left: 4mm; }
+li { margin-bottom: 1mm; }
+table { border-collapse: collapse; width: 100%; margin: 2.5mm 0 4mm;
+        font-size: 9.2pt; page-break-inside: avoid; }
+th, td { border: 1px solid #9aa7b4; padding: 1.4mm 1.8mm; text-align: center;
+         vertical-align: middle; }
+th { background: #eaf0f6; color: #123a6b; font-weight: 600; }
+tr:nth-child(even) td { background: #f7f9fb; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 9pt;
+       background: #f2f4f7; padding: 0.3mm 1mm; border-radius: 1mm; }
+pre { background: #f6f8fa; border-left: 3px solid #123a6b; padding: 2.5mm;
+      white-space: pre-wrap; font-size: 8.8pt; line-height: 1.45; }
+blockquote { margin: 2mm 0; padding: 1.5mm 3mm; background: #fff8e1;
+             border-left: 3px solid #e0a800; color: #5f4b00; }
+a { color: #0b5cad; text-decoration: none; }
+</style></head><body><h1>智训引擎 · 工业模型自进化 Harness 项目说明书</h1>
+<h2>一、作品概述</h2>
+<p>本作品对应赛题的三类工业模型续训任务（A 分类 / B 回归 / C 回归）。
+我们提供一个只读镜像，通过平台协议完成多轮"提出假设 → 续训 → 平台测量 → 选择产物"的闭环，
+每轮在父模型基础上小步更新，指标不劣化时才向前推进。</p>
+<h2>二、总体流程</h2>
+<pre><code class="language-text">start 帧 ──&gt; 读取历史记录与漂移 ──&gt; 平台模型给出本轮决策
+         ──&gt; 按数据集策略：A/C 安全续训，B 固定复现链
+         ──&gt; 平台测量验证指标
+         ──&gt; A/C 未优于父模型：自动回退（epochs/2、lr/2）再测
+         ──&gt; 择优提交候选或保留父产物 ──&gt; save_state ──&gt; finish
+</code></pre>
+<p>每轮至少发生一次真实模型调用，<code>model_call_ids</code> 全部来自平台回执；
+选择理由、假设与变更说明随 <code>finish</code> 一并提交。</p>
+<h2>三、关键设计</h2>
+<h3>1. 决策来自平台模型</h3>
+<p><code>contestlib/decision.py</code> 把数据集、指标方向、历史 before/after、尝试记录和漂移摘要
+组织成消息，要求模型只返回 JSON（epochs、learning_rate、hypothesis、change_summary、reason）。
+解析失败时使用保守默认值，保证流程不中断。</p>
+<h3>2. 安全训练 safe_train</h3>
+<p>主方案未优于父模型时，自动用一半 epochs 和一半学习率在 <code>round-XX-alt</code> 重训；
+两次都不优于父模型，则 <code>keep_parent</code>，提交的选中产物仍为父检查点，避免指标回退。</p>
+<h3>3. 数据集策略</h3>
+<p>A：采纳预算 10 轮、epochs 下限 2，逐轮小步续训；
+B：前 3 次采纳固定 5 轮 / 0.0005，走到已验证的稳定可见点后停训，仅保留父产物；
+C：采纳预算 1 轮、epochs 下限 2，其余轮次不训练。
+预算用尽后仍每轮真实调用平台模型并 <code>finish</code>，保证协议完整，同时显著降低 CPU 消耗。
+B 的固定链不以复现旧记录的隐藏指标为目标——试运行 #6 证明同一检查点的 B 隐藏指标
+在不同试运行间不可比（见实验日志），因此 B 以稳定可见点 + 低资源为目标。</p>
+<h3>4. 漂移检测</h3>
+<p>对训练集与验证集的特征分布做统计对比，把分类占比变化、数值均值/方差变化写入
+本轮记录和平台配置，作为后续决策依据。</p>
+<h3>5. 状态管理</h3>
+<p>每轮把选中检查点与完整 records 写入原生状态目录；下一轮读出历史记录，
+模型据此判断是否继续小步更新还是保留父模型。</p>
+<h2>四、平台试运行结果</h2>
+<p>七次试运行中六次产出完整报告（R3 因 state 目录问题提交失败），每次 30 轮、
+14,773 个评估样本。隐藏测试指标：</p>
+<table>
+<thead>
+<tr>
+<th>数据集</th>
+<th>指标</th>
+<th>R1</th>
+<th>R2</th>
+<th>R4</th>
+<th>R5</th>
+<th>R6</th>
+<th>R7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>Macro F1 ↑</td>
+<td>0.8772</td>
+<td>0.5758</td>
+<td>0.8789</td>
+<td>0.8801</td>
+<td><strong>0.8808</strong></td>
+<td>0.8800</td>
+</tr>
+<tr>
+<td>B</td>
+<td>RMSE ↓</td>
+<td>318.69</td>
+<td>708.08</td>
+<td>708.08</td>
+<td>660.28</td>
+<td>679.36</td>
+<td>679.36</td>
+</tr>
+<tr>
+<td>C</td>
+<td>RMSE ↓</td>
+<td>56.49</td>
+<td>56.36</td>
+<td>56.36</td>
+<td>56.70</td>
+<td>56.36</td>
+<td>56.58</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>关键改动</th>
+<th>CPU 合计</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>基线 harness，30 轮</td>
+<td>5,200s</td>
+<td>B 出现 226/319 的异常低值</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>采纳预算 A3/B2/C1</td>
+<td>3,555s</td>
+<td>A/B 早停伤害隐藏指标</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>预算 A10/B10/C1 + epochs 下限</td>
+<td>3,520s</td>
+<td>A/C 稳定，B 停在可见/隐藏不符的差盆地</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>B 每轮网格择优</td>
+<td>3,977s</td>
+<td>B CPU +65% 仅换 7% 隐藏提升</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>B 固定 3 步 5 轮 / 0.0005 后停训</td>
+<td>3,346s</td>
+<td>A 最高，B 与 R5 同区间且更省资源</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>文档与稳健性完善，策略不变</td>
+<td><strong>3,313s</strong></td>
+<td>与 R6 指标基本重合，CPU/Token 最低，正式提交版</td>
+</tr>
+</tbody>
+</table>
+<p>关键观察：</p>
+<ul>
+<li>A 的公开验证可见 Macro F1 可达 0.97，但隐藏上限稳定在 0.88 附近，可见涨幅不迁移。</li>
+<li>B 的可见指标与隐藏指标严重脱钩；同一检查点（可见链 658.13 → 663.14 → 652.57 逐位复现）
+  在 R1 与 R6/R7 的隐藏 RMSE 分别为 318.69 与 679.36。R6、R7 的 B 隐藏值逐位相同，
+  说明同一检查点在相邻试运行中可复现，R1 的 318.69 属于异常记录或不同隐藏划分；
+  B 只能以稳定检查点 + 资源效率为目标，不再追 226/319 的旧记录。</li>
+<li>C 只需采纳 1 轮，隐藏指标与 2 轮持平，CPU 约减半。</li>
+<li>平台对同一产物展示的可见指标存在 ±3~4 复测抖动，该列不能用于跨轮比较。</li>
+</ul>
+<h3>4. 静态基线对照</h3>
+<p>静态基线为初始父检查点（不续训）在同一公开验证集上的实测值；R7 为 30 轮运行结束后的选中产物。
+公开验证集与隐藏测试划分不同，两列不能横向比较，只用于证明同分布上未退化。</p>
+<table>
+<thead>
+<tr>
+<th>数据集</th>
+<th>指标</th>
+<th>静态父模型（公开验证）</th>
+<th>R7 选中产物（公开验证）</th>
+<th>R7 隐藏测试</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>Accuracy ↑</td>
+<td>0.8786</td>
+<td>≈0.978*</td>
+<td>0.8852</td>
+</tr>
+<tr>
+<td>A</td>
+<td>Macro F1 ↑</td>
+<td>0.7140</td>
+<td>—</td>
+<td>0.8800</td>
+</tr>
+<tr>
+<td>B</td>
+<td>RMSE ↓</td>
+<td>681.16</td>
+<td>652.57</td>
+<td>679.36</td>
+</tr>
+<tr>
+<td>C</td>
+<td>RMSE ↓</td>
+<td>52.87</td>
+<td>52.12</td>
+<td>56.58</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>A 的末轮可见 Accuracy 取平台同策略记录（R1 0.9778、R4 0.9789）；可见 Macro F1 随轮次
+波动较大，未列入对照，官方主指标以隐藏 F1 为准。A 的可见值在第 3 轮后可达 0.96 以上，
+但隐藏上限稳定在 0.88，说明公开验证提升不迁移，不能作为选点依据。
+公开验证集上三项任务均优于静态父模型：A Accuracy +9.9~10.0pt、B RMSE −4.2%、C RMSE −1.4%。</li>
+</ul>
+<h3>5. 算力、标注与 Token 消耗</h3>
+<p>R7 单次完整试运行（30 轮、14,773 个评估样本）：</p>
+<table>
+<thead>
+<tr>
+<th>数据集</th>
+<th>采纳/轮数</th>
+<th>CPU</th>
+<th>隐藏指标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>10 / 10</td>
+<td>1,048.97s</td>
+<td>Macro F1 0.8800</td>
+</tr>
+<tr>
+<td>B</td>
+<td>3 / 10</td>
+<td>367.78s</td>
+<td>RMSE 679.36</td>
+</tr>
+<tr>
+<td>C</td>
+<td>1 / 10</td>
+<td>1,896.75s</td>
+<td>RMSE 56.58</td>
+</tr>
+<tr>
+<td>合计</td>
+<td>14 / 30</td>
+<td><strong>3,313.50s</strong></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Token：输入 27,433 + 输出 17,018 = 44,451，折合 1,481.7 Token/轮；每轮只调用一次平台模型。</li>
+<li>标注：额外人工标注 0 次；只使用平台公开训练集/验证集标签。SFT 的 13 条标签由
+  132 次网格实测自动生成，没有引入人工标注成本。</li>
+<li>单位增益：B 用 368s 走到与 R6 逐位相同的稳定点，是三条链路中单位算力收益最高的；
+  A 用 1,049s 达到隐藏上限 0.880；C 的 1,897s 是算力大头，但 1 轮与 2 轮隐藏指标持平，
+  预算 1 已是稳定配置中成本最低的选择。</li>
+<li>与 R6 相比，R7 策略未变，CPU 下降 1%，Token 减少 129，指标无实质变化，
+  符合稳健性改动不改训练路径的预期。</li>
+</ul>
+<h3>6. 工业落地价值</h3>
+<p>方案面向传感器批次漂移、跨设备/跨工况的轻量工业模型：CPU-only、离线运行、无需 API Key，
+可直接部署在边缘网关或产线工控机；每轮只产生一个小于 16MiB 的检查点，状态可续跑、产物可回滚。
+预算与 epochs 下限把更新频率和算力锁死，避免模型在无收益时持续训练；全量 records 与平台测量值
+可审计，满足工业场景对可解释、可回滚和零人工干预的要求。</p>
+<h2>五、微调过程</h2>
+<h3>1. 监督数据来自网格实测</h3>
+<p>对 A/B/C × 每个历史状态，跑 epochs × learning_rate 网格（initial 12 组，
+后续状态各 8 组），标签取验证指标最优的组合，共 132 次真实训练。
+没有提升的状态不进训练集。</p>
+<h3>2. 两轮迭代</h3>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>样本数</th>
+<th>超参</th>
+<th>loss</th>
+<th>权重</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v1</td>
+<td>9</td>
+<td>rank 32，20 步，lr 1e-4</td>
+<td>1.677 → 0.050</td>
+<td><code>trio://run_dx0l5u4clgcp/sampler_weights/aiplus-v1</code></td>
+</tr>
+<tr>
+<td>v2</td>
+<td>13</td>
+<td>rank 32，10 步，lr 5e-5</td>
+<td>1.503 → 0.568</td>
+<td><code>trio://run_ibgiij7ethtz/sampler_weights/aiplus-v2</code></td>
+</tr>
+</tbody>
+</table>
+<h3>3. 微调后评测对比（2 轮累计）</h3>
+<table>
+<thead>
+<tr>
+<th>数据集</th>
+<th>基线</th>
+<th>SFT v1</th>
+<th>SFT v2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A（越高越好）</td>
+<td>+0.0118</td>
+<td>+0.0053</td>
+<td>+0.0031</td>
+</tr>
+<tr>
+<td>B（越低越好）</td>
+<td>−11.29</td>
+<td>−21.47</td>
+<td><strong>−27.74</strong></td>
+</tr>
+<tr>
+<td>C（越低越好）</td>
+<td>−1.234</td>
+<td>−1.199</td>
+<td>−0.772</td>
+</tr>
+</tbody>
+</table>
+<p>结论：v2 学会"保守小步"，B 的收益接近基线的 2.5 倍；
+但仍存在"每轮都答 2 轮"的模式坍缩，A 的持续增长未学会，
+说明状态到决策的条件映射需要更强的状态差异与更弱的拟合，是下一轮工作方向。</p>
+<p>实验记录：https://swanlab.cn/@1839229675/aiplus-harness （含 sft-v1 / sft-v2
+训练曲线与三轮评测运行）。</p>
+<h3>4. 当前定位</h3>
+<p>试运行表明，隐藏指标主要由 harness 的数据集策略（预算 / 固定链）决定，
+单轮决策文本的影响有限。SFT v2 仍负责每轮的假设、理由与参数建议，
+但 B/C 的实际训练配置由 harness 覆盖。后续若要继续微调，应改为
+"给定候选让模型选择"的决策形式，避免 13 条样本造成的模式坍缩。</p>
+<h2>六、资源与合规</h2>
+<ul>
+<li>训练与预测只在 <code>/workspace</code> 写文件，<code>/app</code>、<code>/previous</code>、<code>/state</code> 只读。</li>
+<li>只使用平台提供的公开训练集和验证集；验证集只用于测量与选择，不并入梯度训练。</li>
+<li>镜像内不包含任何 API Key；模型访问全部走平台 <code>rnd.model()</code> 或本地传输层。</li>
+<li>单轮候选文件数、体积均受 <code>rnd.limits</code> 约束，本次只提交 <code>checkpoint.npz</code>。</li>
+<li>训练异常时保留父产物并完成轮次；状态目录使用唯一名称，读取时清洗非法记录。</li>
+</ul>
+<h2>七、复现步骤</h2>
+<pre><code class="language-sh"># 从平台已验收的 aiplus-harness:0.1 派生，只覆盖 /app
+docker build -f Dockerfile.rebuild --platform linux/amd64 -t aiplus-harness:r7 .
+docker save -o harness-r7.tar aiplus-harness:r7
+docker load -i harness-r7.tar
+docker run --rm aiplus-harness:r7      # 输出 describe JSON
+</code></pre>
+<p>训练轮次指标可通过 <code>tools/log_swanlab.py</code> 写入 SwanLab 实验记录，
+实验地址：https://swanlab.cn/@1839229675/aiplus-harness ，对应提交表单中的"训练记录链接"。</p>
+<h2>八、提交物对应</h2>
+<ul>
+<li>模型类型：持久化 Sampler 微调权重</li>
+<li>Sampler 权重路径：<code>trio://run_ibgiij7ethtz/sampler_weights/aiplus-v2</code></li>
+<li>训练记录链接：https://swanlab.cn/@1839229675/aiplus-harness/runs/efhtxlik</li>
+<li>Harness 镜像：Linux/amd64 镜像归档 <code>harness-r7.tar</code>（/app/harness.py 固定入口，
+  镜像 ID <code>sha256:3abdff2d0fae...</code>，SHA-256 <code>c65fb84b...</code>；超过 50MB，按网盘链接提交）</li>
+<li>源码仓库：https://github.com/zhixunyinqing/aiplus-harness</li>
+<li>项目说明书：本文档（<code>docs/作品文档.pdf</code>）</li>
+<li>系统运行说明：<code>docs/系统运行说明.pdf</code></li>
+</ul></body></html>
